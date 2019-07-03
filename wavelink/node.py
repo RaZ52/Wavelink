@@ -41,8 +41,8 @@ class Node:
         You should not create :class:`Node` objects manually. Instead you should use, :func:`Client.initiate_node`.
     """
 
-    def __init__(self, host: str, port: int, shards: int, user_id: int, *, client, session, rest_uri: str, password: str,
-                 region: str, identifier: str, shard_id: int=None, secure: bool=False):
+    def __init__(self, host: str, port: int, shards: int, user_id: int, *, client, session, rest_uri: str,
+                 password: str, region: str, identifier: str, shard_id: int = None, secure: bool = False):
         self.host = host
         self.port = port
         self.rest_uri = rest_uri

@@ -183,7 +183,7 @@ class Client:
         ------------
         guild_id:
             The guild ID to retrieve a player for.
-        Optional[cls: class]
+        cls: class [Optional]
             An optional class to pass to build from, overriding the default :class:`Player` class.
             This must be similar to :class:`Player`. E.g a subclass.
 

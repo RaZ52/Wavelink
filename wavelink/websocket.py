@@ -152,7 +152,8 @@ class WebSocket:
                 except KeyError:
                     pass
 
-    def _get_event(self, name: str, data) -> Union[TrackEnd, TrackException, TrackStuck]:
+    @staticmethod
+    def _get_event(name: str, data) -> Union[TrackEnd, TrackException, TrackStuck]:
         if name == 'TrackEndEvent':
             return TrackEnd(data['player'], data.get('track', None), data.get('reason', None))
         elif name == 'TrackExceptionEvent':

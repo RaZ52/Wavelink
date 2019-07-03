@@ -98,6 +98,7 @@ class Player:
         self.last_update = None
         self.last_position = None
         self.position_timestamp = None
+        self.difference = 0
 
         self._voice_state = {}
 
@@ -116,18 +117,30 @@ class Player:
 
     @property
     def is_playing(self):
-        raise NotImplementedError
+        if self.current and self.last_position is not None:
+            if self.last_position + self.difference < self.current.length:
+                return True
+            else:
+                # self.current = None
+                self.last_update = None
+                self.last_position = None
+                self.position_timestamp = None
+                self.difference = 0
+                return False
+        else:
+            return False
+        # raise NotImplementedError
 
     @property
     def position(self):
         if not self.is_playing:
-            return 0
+            return None
 
         if self.paused:
             return min(self.last_position, self.current.duration)
 
-        difference = (time.time() * 1000) - self.last_update
-        return min(self.last_position + difference, self.current.duration)
+        self.difference = (time.time() * 1000) - self.last_update
+        return min(self.last_position + self.difference, self.current.duration)
 
     async def update_state(self, state: dict):
         state = state['state']
@@ -230,6 +243,11 @@ class Player:
         await self.node._send(op='stop', guildId=str(self.guild_id))
         __log__.debug(f'PLAYER | Current track stopped:: {str(self.current)} ({self.channel_id})')
         self.current = None
+        self.paused = False
+        self.last_update = None
+        self.last_position = None
+        self.position_timestamp = None
+
 
     async def destroy(self):
         """|coro|
