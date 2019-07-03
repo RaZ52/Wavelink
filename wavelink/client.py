@@ -251,7 +251,7 @@ class Client:
         return player
 
     async def initiate_node(self, host: str, port: int, *, rest_uri: str, password: str, region: str, identifier: str,
-                            shard_id: int=None, secure: bool=False) -> Node:
+                            shard_id: int = None, secure: bool = False) -> Node:
         """|coro|
 
         Initiate a Node and connect to the provided server.
@@ -304,7 +304,7 @@ class Client:
         __log__.info(f'CLIENT | New node initiated:: {node.__repr__()} ')
         return node
 
-    async def destroy_node(self, *, identifier: str=None):
+    async def destroy_node(self, *, identifier: str = None):
         """Destroy the node and it's players.
 
         Parameters
