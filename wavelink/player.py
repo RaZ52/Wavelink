@@ -378,7 +378,8 @@ class Player:
             await self._dispatch_voice_update()
 
         if self.current:
-            await self.node._send(op='play', guildId=str(self.guild_id), track=self.current.id, startTime=int(self.position))
+            await self.node._send(op='play', guildId=str(self.guild_id), track=self.current.id,
+                                  startTime=int(await self.position))
             self.last_update = time.time() * 1000
 
             if self.paused:
