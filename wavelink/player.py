@@ -104,6 +104,7 @@ class Player:
 
         self.volume = 100
         self.paused = False
+        self.isPlaying = False
         self.current = None
         self.channel_id = None
 
@@ -132,8 +133,8 @@ class Player:
         # raise NotImplementedError
 
     @property
-    def position(self):
-        if not self.is_playing:
+    async def position(self):
+        if not await self.is_playing:
             return None
 
         if self.paused:
@@ -143,6 +144,8 @@ class Player:
         return min(self.last_position + self.difference, self.current.duration)
 
     async def update_state(self, state: dict):
+        self.isPlaying = state['isPlaying']
+
         state = state['state']
 
         self.last_update = time.time() * 1000
