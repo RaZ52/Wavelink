@@ -117,20 +117,9 @@ class Player:
         return self.channel_id is not None
 
     @property
-    def is_playing(self):
-        if self.current and self.last_position is not None:
-            if self.last_position + self.difference < self.current.length:
-                return True
-            else:
-                # self.current = None
-                self.last_update = None
-                self.last_position = None
-                self.position_timestamp = None
-                self.difference = 0
-                return False
-        else:
-            return False
-        # raise NotImplementedError
+    async def is_playing(self):
+        await self.node._send(op='isPlaying', guildId=str(self.guild_id))
+        return self.isPlaying
 
     @property
     async def position(self):
