@@ -99,6 +99,7 @@ class Player:
         self.last_position = None
         self.position_timestamp = None
         self.difference = 0
+
         self._voice_state = {}
 
         self.volume = 100
@@ -115,12 +116,14 @@ class Player:
         """ Returns whether the player is connected to a voicechannel or not """
         return self.channel_id is not None
 
+    @property
     async def is_playing(self):
         await self.node._send(op='isPlaying', guildId=str(self.guild_id))
         return self.isPlaying
 
+    @property
     async def position(self):
-        if not await self.is_playing():
+        if not await self.is_playing:
             return None
 
         if self.paused:
@@ -375,8 +378,7 @@ class Player:
             await self._dispatch_voice_update()
 
         if self.current:
-            await self.node._send(op='play', guildId=str(self.guild_id), track=self.current.id,
-                                  startTime=int(await self.position()))
+            await self.node._send(op='play', guildId=str(self.guild_id), track=self.current.id, startTime=int(self.position))
             self.last_update = time.time() * 1000
 
             if self.paused:
