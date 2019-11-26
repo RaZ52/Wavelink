@@ -43,11 +43,12 @@ class Track:
     :ivar length: The duration of the track.
     :ivar duration: The duration of the track.
     :ivar uri: The track URI. Could be None.
+    :ivar author: The author of the track.
     :ivar is_stream: Bool indicating whether the track is a stream.
     :ivar thumb: The thumbnail associated with this track. Could be None.
     """
 
-    __slots__ = ('id', 'info', 'query', 'title', 'ytid', 'length', 'duration', 'uri', 'is_stream', 'dead', 'thumb')
+    __slots__ = ('id', 'info', 'query', 'title', 'ytid', 'length', 'duration', 'uri', 'author', 'is_stream', 'dead', 'thumb')
 
     def __init__(self, id_, info, query=None):
         self.id = id_
@@ -59,6 +60,7 @@ class Track:
         self.length = info.get('length')
         self.duration = self.length
         self.uri = info.get('uri')
+        self.author = info.get('author')
 
         self.is_stream = info.get('isStream')
         self.dead = False
@@ -125,6 +127,9 @@ class Player:
     async def position(self):
         if not await self.is_playing:
             return None
+
+        if not self.current:
+            return 0
 
         if self.paused:
             return min(self.last_position, self.current.duration)
@@ -207,7 +212,7 @@ class Player:
         self.channel_id = None
         await self._get_shard_socket(guild.shard_id).voice_state(self.guild_id, None)
 
-    async def play(self, track):
+    async def play(self, track: Track, *, replace: bool=True):
         """|coro|
 
         Play a WaveLink Track.
@@ -215,17 +220,20 @@ class Player:
         Parameters
         ------------
         track: :class:`Track`
-            The :class:`Track` to initiate playing. If a song is already playing it will be stopped,
-            and the new track will begin.
+            The :class:`Track` to initiate playing.
+        replace: bool
+            Whether or not the current track, if there is one, should be replaced or not. Defaults to True.
         """
         self.last_update = 0
         self.last_position = 0
         self.position_timestamp = 0
         self.paused = False
 
-        await self.node._send(op='play', guildId=str(self.guild_id), track=track.id)
-        __log__.debug(f'PLAYER | Started playing track:: {str(track)} ({self.channel_id})')
+        no_replace = not replace
+
         self.current = track
+        await self.node._send(op='play', guildId=str(self.guild_id), track=track.id, noReplace=no_replace)
+        __log__.debug(f'PLAYER | Started playing track:: {str(track)} ({self.channel_id})')
 
     async def stop(self):
         """|coro|

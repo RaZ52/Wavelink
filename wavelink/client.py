@@ -176,26 +176,32 @@ class Client:
 
         return sorted(nodes, key=lambda n: len(n.players))[0]
 
-    def get_player(self, guild_id: int, cls=None) -> Optional[Player]:
+    def get_player(self, guild_id: int, *, cls=None, node_id=None) -> Player:
         """Retrieve a player for the given guild ID. If None, a player will be created and returned.
+
+        .. versionchanged:: 0.3.0
+            cls is now a keyword only argument.
 
         Parameters
         ------------
-        guild_id:
+        guild_id: int
             The guild ID to retrieve a player for.
-        cls: class [Optional]
+        cls: Optional[class]
             An optional class to pass to build from, overriding the default :class:`Player` class.
             This must be similar to :class:`Player`. E.g a subclass.
+        node_id: Optional[str]
+            An optional Node identifier to create a player under. If the player already exists this will be ignored.
+            Otherwise an attempt to find the node and assign a new player will be made.
 
         Returns
         ---------
-        Optional[:class:`wavelink.player.Player`]
+        Player
             The :class:`wavelink.player.Player` associated with the given guild ID.
 
         Raises
         --------
         InvalidIDProvided
-            The given ID does not yield a valid guild.
+            The given ID does not yield a valid guild or Node.
         ZeroConnectedNodes
             There are no :class:`wavelink.node.Node`'s currently connected.
         """
@@ -218,6 +224,17 @@ class Client:
         if not cls:
             cls = Player
 
+        if node_id:
+            node = self.get_node(identifier=node_id)
+
+            if not node:
+                raise InvalidIDProvided(f'A Node with the identifier <{node_id}> does not exist.')
+
+            player = cls(self.bot, guild_id, node)
+            node.players[guild_id] = player
+
+            return player
+
         shard_options = []
         region_options = []
         nodes = self.nodes.values()
@@ -230,7 +247,8 @@ class Client:
             if node.region.lower() == str(guild.region).lower():
                 region_options.append(node)
 
-        if not shard_options or region_options:
+        if not shard_options and not region_options:
+            # Sort by len of node players
             node = sorted(nodes, key=lambda n: len(n.players))[0]
             player = cls(self.bot, guild_id, node)
             node.players[guild_id] = player
@@ -239,7 +257,7 @@ class Client:
 
         best = [n for n in shard_options if n in region_options]
         if best:
-            node = sorted(best, key=lambda _: len(_.players))[0]
+            node = sorted(best, key=lambda n: len(n.players))[0]
         elif shard_options:
             node = sorted(shard_options, key=lambda n: len(n.players))[0]
         else:
